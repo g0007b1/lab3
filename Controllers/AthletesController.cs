@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using LW1.Controllers.Memory;
+using LW1.Controllers.Memory.Interfaces;
 using LW1.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,56 +11,63 @@ namespace LW1.Controllers
     [ApiController]
     public class AthletesController : ControllerBase
     {
-        private static readonly IList<Athlete> MemCache = new List<Athlete>();
+        private static readonly IStorage<Athlete> _memCache = new MemCache();
 
         // GET api/<AthletesController>
         [HttpGet]
         public ActionResult<IEnumerable<Athlete>> Get()
         {
-            return MemCache.ToList();
+            return Ok(_memCache.All);
         }
 
         // GET api/<AthletesController>/{id}
         [HttpGet("{id}")]
-        public ActionResult<Athlete> Get(int id)
+        public ActionResult<Athlete> Get(Guid id)
         {
-            if (id < 0 || id >= MemCache.Count)
-            {
-                throw new IndexOutOfRangeException("Index out of range");
-            }
+            if (!_memCache.Has(id)) return NotFound("No such");
 
-            return MemCache[id];
+            return Ok(_memCache[id]);
         }
 
         // POST api/<AthletesController>
         [HttpPost]
-        public void Post([FromBody] Athlete value)
+        public IActionResult Post([FromBody] Athlete value)
         {
-            MemCache.Add(value);
+            var validationResult = value.Validate();
+
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+            _memCache.Add(value);
+
+            return Ok($"{value} has been added");
         }
 
         // PUT api/<AthletesController>/{id}
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Athlete value)
+        public IActionResult Put(Guid id, [FromBody] Athlete value)
         {
-            if (id < 0 || id >= MemCache.Count)
-            {
-                throw new IndexOutOfRangeException("Index out of range");
-            }
+            if (!_memCache.Has(id)) return NotFound("No such");
 
-            MemCache[id] = value;
+            var validationResult = value.Validate();
+
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+            var previousValue = _memCache[id];
+            _memCache[id] = value;
+
+            return Ok($"{previousValue} has been updated to {value}");
         }
 
         // DELETE api/<AthletesController>/{id}
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(Guid id)
         {
-            if (id < 0 || id >= MemCache.Count)
-            {
-                throw new IndexOutOfRangeException("Index out of range");
-            }
+            if (!_memCache.Has(id)) return NotFound("No such");
 
-            MemCache.RemoveAt(id);
+            var valueToRemove = _memCache[id];
+            _memCache.RemoveAt(id);
+
+            return Ok($"{valueToRemove} has been removed");
         }
     }
 }
