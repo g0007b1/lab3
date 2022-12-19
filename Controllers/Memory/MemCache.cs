@@ -1,15 +1,15 @@
-﻿using System;
+﻿using LW1.Controllers.Memory.Interfaces;
+using LW1.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using LW1.Controllers.Memory.Interfaces;
-using LW1.Models;
 
 namespace LW1.Controllers.Memory
 {
     public class MemCache : IStorage<Athlete>
     {
-        private readonly List<Athlete> _memCache = new List<Athlete>();
         private readonly object _sync = new object();
+        private readonly List<Athlete> _memCache = new List<Athlete>();
         public List<Athlete> All => _memCache.ToList();
 
         public Athlete this[Guid id]
@@ -18,18 +18,27 @@ namespace LW1.Controllers.Memory
             {
                 lock (_sync)
                 {
-                    if (!Has(id)) throw new IncorrectAthleteException($"No Car with id {id}");
+                    if (!Has(id))
+                    {
+                        throw new IncorrectAthleteException($"No Athlete with id {id}");
+                    }
 
                     return _memCache.Single(x => x.Id == id);
                 }
             }
             set
             {
-                if (id == Guid.Empty) throw new IncorrectAthleteException("Cannot request Car with an empty id");
+                if (id == Guid.Empty)
+                {
+                    throw new IncorrectAthleteException("Cannot request Athlete with an empty id");
+                }
 
                 lock (_sync)
                 {
-                    if (Has(id)) RemoveAt(id);
+                    if (Has(id))
+                    {
+                        RemoveAt(id);
+                    }
 
                     value.Id = id;
                     _memCache.Add(value);
@@ -40,7 +49,9 @@ namespace LW1.Controllers.Memory
         public void Add(Athlete value)
         {
             if (value.Id != Guid.Empty)
+            {
                 throw new IncorrectAthleteException($"Cannot add value with predefined id {value.Id}");
+            }
 
             value.Id = Guid.NewGuid();
             this[value.Id] = value;

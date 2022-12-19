@@ -11,7 +11,12 @@ namespace LW1.Controllers
     [ApiController]
     public class AthletesController : ControllerBase
     {
-        private static readonly IStorage<Athlete> _memCache = new MemCache();
+        private readonly IStorage<Athlete> _memCache;
+
+        public AthletesController(IStorage<Athlete> memCache)
+        {
+            _memCache = memCache;
+        }
 
         // GET api/<AthletesController>
         [HttpGet]
