@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Company>ByankinaAndIzgagin</Company>
+    <ProductVersion>0.0.4-rc.1</ProductVersion>
+    <Product>LW4</Product>
   </PropertyGroup>
 
   <ItemGroup>
